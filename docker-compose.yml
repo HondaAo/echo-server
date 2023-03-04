@@ -1,0 +1,41 @@
+version: "3"
+services:
+  app:
+    build:
+      context: ./
+      target: "dev"
+    tty: true
+    volumes:
+      - .:/go/src/app
+    environment:
+      - DB_USER=mysql
+      - DB_PASSWORD=example
+      - DB_HOST=db
+      - DB_PORT=3306
+      - DB_NAME=elearn
+      - PORT=8080
+    ports:
+      - 8080:8080
+    depends_on:
+      - db
+  db:
+    build:
+      context: ./
+      dockerfile: ./db/Dockerfile
+    volumes:
+      - gorm_data:/var/lib/mysql/
+      - ./logs:/var/log/mysql
+      - ./db/:/docker-entrypoint-initdb.d
+    environment:
+      - MYSQL_DATABASE=elearn
+      - MYSQL_ROOT_PASSWORD=roo
+      - MYSQL_USER=mysql
+      - MYSQL_PASSWORD=example
+    ports:
+      - 3306:3306
+
+networks:
+  default:
+
+volumes:
+  gorm_data:
