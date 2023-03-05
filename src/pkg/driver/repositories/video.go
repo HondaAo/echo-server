@@ -22,7 +22,7 @@ func (r *videoRepository) Find(videoID string) (*entity.Video, error) {
 	video := &models.Video{}
 	r.db.First(video, "video_id = ?", videoID)
 
-	return models.NewEntity(video)
+	return models.NewEntity(video), nil
 }
 
 func (r *videoRepository) Store(video *entity.Video) error {
@@ -72,6 +72,30 @@ func (r *videoRepository) ChangeStatus(videoID string) error {
 	return nil
 }
 
+func (r *videoRepository) FindMany(condition entity.SearchCondition) ([]*entity.Video, error) {
+	videos := []*models.Video{}
+	result := r.db.Limit(int(condition.Limit)).Find(&videos)
+	if len(condition.VideoIDs) > 0 {
+		result.Where("video_id IN ?", condition.VideoIDs).Find(&videos)
+	}
+	if condition.CategoryID != 0 {
+		result.Where("category_id = ?", condition.CategoryID).Find(&videos)
+	}
+	if condition.Level != 0 {
+		result.Where("level = ?", condition.Level).Find(&videos)
+	}
+
+	if result.Error != nil {
+		return nil, result.Error
+	}
+
+	entities := make([]*entity.Video, 0, len(videos))
+	for _, v := range videos {
+		entities = append(entities, models.NewEntity(v))
+	}
+
+	return entities, nil
+}
 func (r *videoRepository) Delete(videoID string) error {
 	return nil
 }

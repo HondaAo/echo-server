@@ -18,9 +18,9 @@ func NewScriptIdiomsRepository(db *gorm.DB) *scriptIdiomsRepository {
 	}
 }
 
-func (r *scriptIdiomsRepository) Find(word string) ([]*entity.ScriptIdioms, error) {
+func (r *scriptIdiomsRepository) Find(words []string) ([]*entity.ScriptIdioms, error) {
 	var scriptIdioms []*models.ScriptIdioms
-	if result := r.db.Where("word = ?", word).Find(&scriptIdioms); result.Error != nil {
+	if result := r.db.Where("word IN ?", words).Find(&scriptIdioms); result.Error != nil {
 		return nil, result.Error
 	}
 

@@ -1,8 +1,6 @@
 package videos
 
 import (
-	"log"
-
 	"github.com/HondaAo/snippet/src/pkg/handle/requests"
 	"github.com/HondaAo/snippet/src/pkg/services/idioms"
 	"github.com/HondaAo/snippet/src/pkg/services/scriptidioms"
@@ -16,6 +14,8 @@ import (
 
 type VideoUsecaseInterface interface {
 	GetVideoByID(videoID string) (*entity.Video, []*scriptEntity.Script, []*scriptIdiomsEntity.ScriptIdioms, []*idiomEntity.Idioms, error)
+	// GetVideoByIdioms(idioms []string) (*entity.Video, []*scriptEntity.Script, []*scriptIdiomsEntity.ScriptIdioms, []*idiomEntity.Idioms, error)
+	GetVideos(limit uint64, level uint64, categoryID uint64) ([]*entity.Video, error)
 	CreateVideo(request *requests.VideoRequest) error
 	UpdateVideo(request *requests.VideoUpdateRequest) error
 	ChangeDisplayStatus(videoID string) error
@@ -94,7 +94,6 @@ func (v *videoUsecase) CreateVideo(request *requests.VideoRequest) error {
 	}
 
 	// idiomsが全てDBにあるか
-	log.Println(idioms)
 	_, err = v.idiomsRepository.FindIdioms(idioms)
 	if err != nil {
 		return err
@@ -105,6 +104,43 @@ func (v *videoUsecase) CreateVideo(request *requests.VideoRequest) error {
 	}
 
 	return nil
+}
+
+func (v *videoUsecase) GetVideoByIdioms(idioms []string) ([]*entity.Video, error) {
+	scriptIdioms, err := v.scriptIdiomsRepository.Find(idioms)
+	if err != nil {
+		return nil, err
+	}
+
+	var videoIds []string
+	for _, s := range scriptIdioms {
+		videoIds = append(videoIds, s.VideoID)
+	}
+	videos, err := v.videoRepository.FindMany(entity.SearchCondition{
+		VideoIDs:   videoIds,
+		Limit:      entity.DEFAULT_MAX_LIMIT,
+		Level:      entity.DEFAULT_LEVEL,
+		CategoryID: entity.DEFAULT_CATEGORY_ID,
+	})
+	if err != nil {
+		return nil, err
+	}
+
+	return videos, nil
+}
+
+func (v *videoUsecase) GetVideos(limit uint64, level uint64, categoryID uint64) ([]*entity.Video, error) {
+	videos, err := v.videoRepository.FindMany(entity.SearchCondition{
+		Level:      level,
+		Limit:      limit,
+		CategoryID: categoryID,
+	})
+
+	if err != nil {
+		return nil, err
+	}
+
+	return videos, nil
 }
 
 func (v *videoUsecase) ChangeDisplayStatus(videoID string) error {

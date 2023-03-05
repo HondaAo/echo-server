@@ -41,7 +41,7 @@ func (v *VideoRequest) NewEntity() (*entity.Video, []scriptEntity.Script, []scri
 
 		for _, i := range s.ScriptIdioms {
 			scriptIdioms = append(scriptIdioms, scriptIdiomsEntity.ScriptIdioms{
-				Idiom:    i.Idiom,
+				Idiom:    i,
 				VideoID:  video.VideoID,
 				ScriptID: s.ScriptID,
 			})

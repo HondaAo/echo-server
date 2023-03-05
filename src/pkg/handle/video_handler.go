@@ -2,6 +2,7 @@ package handle
 
 import (
 	"net/http"
+	"strconv"
 
 	"github.com/HondaAo/snippet/src/pkg/handle/requests"
 	"github.com/HondaAo/snippet/src/pkg/handle/responses"
@@ -11,6 +12,7 @@ import (
 
 type Handler interface {
 	GetVideo() echo.HandlerFunc
+	GetVideos() echo.HandlerFunc
 	StoreVideo() echo.HandlerFunc
 	UpdateVideo() echo.HandlerFunc
 	ChangeStatus() echo.HandlerFunc
@@ -37,6 +39,30 @@ func (v *videoHandler) GetVideo() echo.HandlerFunc {
 		videoResponse := responses.NewResponse(video, scripts, scriptIdioms, idioms)
 
 		return c.JSON(http.StatusAccepted, videoResponse)
+	}
+}
+
+func (v *videoHandler) GetVideos() echo.HandlerFunc {
+	return func(c echo.Context) error {
+		level, err := strconv.Atoi(c.QueryParam("level"))
+		if err != nil {
+			return err
+		}
+		categoryID, err := strconv.Atoi(c.QueryParam("category_id"))
+		if err != nil {
+			return err
+		}
+		limit, err := strconv.Atoi(c.QueryParam("limit"))
+		if err != nil {
+			return err
+		}
+
+		videos, err := v.useCase.GetVideos(uint64(limit), uint64(level), uint64(categoryID))
+		if err != nil {
+			return c.JSON(http.StatusBadRequest, nil)
+		}
+
+		return c.JSON(http.StatusAccepted, videos)
 	}
 }
 
