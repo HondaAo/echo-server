@@ -97,5 +97,8 @@ func (r *videoRepository) FindMany(condition entity.SearchCondition) ([]*entity.
 	return entities, nil
 }
 func (r *videoRepository) Delete(videoID string) error {
+	if result := r.db.Where("video_id = ?", videoID).Delete(&models.Video{}); result.Error != nil {
+		return result.Error
+	}
 	return nil
 }

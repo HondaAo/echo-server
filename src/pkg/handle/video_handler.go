@@ -16,6 +16,7 @@ type Handler interface {
 	StoreVideo() echo.HandlerFunc
 	UpdateVideo() echo.HandlerFunc
 	ChangeStatus() echo.HandlerFunc
+	Delete() echo.HandlerFunc
 }
 
 type videoHandler struct {
@@ -62,7 +63,26 @@ func (v *videoHandler) GetVideos() echo.HandlerFunc {
 			return c.JSON(http.StatusBadRequest, nil)
 		}
 
-		return c.JSON(http.StatusAccepted, videos)
+		var response []*responses.Video
+		for _, v := range videos {
+			response = append(response, responses.NewVideoResponse(v))
+		}
+		return c.JSON(http.StatusAccepted, response)
+	}
+}
+
+func (v *videoHandler) GetByIdioms() echo.HandlerFunc {
+	return func(c echo.Context) error {
+		idiom := c.Param("idiom")
+		videoEnties, err := v.useCase.GetByIdioms([]string{idiom})
+		if err != nil {
+			c.JSON(http.StatusBadRequest, err)
+		}
+		var response []*responses.Video
+		for _, v := range videoEnties {
+			response = append(response, responses.NewVideoResponse(v))
+		}
+		return c.JSON(http.StatusAccepted, response)
 	}
 }
 
@@ -100,6 +120,17 @@ func (v *videoHandler) ChangeStatus() echo.HandlerFunc {
 	return func(c echo.Context) error {
 		id := c.Param("video_id")
 		if err := v.useCase.ChangeDisplayStatus(id); err != nil {
+			return c.JSON(http.StatusBadRequest, err)
+		}
+
+		return c.JSON(http.StatusAccepted, nil)
+	}
+}
+
+func (v *videoHandler) Delete() echo.HandlerFunc {
+	return func(c echo.Context) error {
+		id := c.Param("video_id")
+		if err := v.useCase.DeleteVideo(id); err != nil {
 			return c.JSON(http.StatusBadRequest, err)
 		}
 

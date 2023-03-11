@@ -8,4 +8,5 @@ func RegisterVideoRoute(videoGroup *echo.Group, handler Handler) {
 	videoGroup.PUT("/update", handler.UpdateVideo())
 	videoGroup.GET("/:video_id", handler.GetVideo())
 	videoGroup.PUT("/status/:video_id", handler.ChangeStatus())
+	videoGroup.DELETE("/:video_id", handler.Delete())
 }

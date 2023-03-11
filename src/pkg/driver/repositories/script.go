@@ -70,3 +70,11 @@ func (s *scriptRepository) Update(script *entity.Script) error {
 
 	return nil
 }
+
+func (s *scriptRepository) Delete(videoID string) error {
+	if result := s.db.Where("video_id = ?", videoID).Delete(&models.Script{}); result.Error != nil {
+		return result.Error
+	}
+
+	return nil
+}

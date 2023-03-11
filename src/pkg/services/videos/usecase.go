@@ -1,6 +1,8 @@
 package videos
 
 import (
+	"errors"
+
 	"github.com/HondaAo/snippet/src/pkg/handle/requests"
 	"github.com/HondaAo/snippet/src/pkg/services/idioms"
 	"github.com/HondaAo/snippet/src/pkg/services/scriptidioms"
@@ -14,11 +16,12 @@ import (
 
 type VideoUsecaseInterface interface {
 	GetVideoByID(videoID string) (*entity.Video, []*scriptEntity.Script, []*scriptIdiomsEntity.ScriptIdioms, []*idiomEntity.Idioms, error)
-	// GetVideoByIdioms(idioms []string) (*entity.Video, []*scriptEntity.Script, []*scriptIdiomsEntity.ScriptIdioms, []*idiomEntity.Idioms, error)
+	GetByIdioms(idioms []string) ([]*entity.Video, error)
 	GetVideos(limit uint64, level uint64, categoryID uint64) ([]*entity.Video, error)
 	CreateVideo(request *requests.VideoRequest) error
 	UpdateVideo(request *requests.VideoUpdateRequest) error
 	ChangeDisplayStatus(videoID string) error
+	DeleteVideo(videoID string) error
 }
 
 type videoUsecase struct {
@@ -168,4 +171,56 @@ func (v *videoUsecase) UpdateVideo(request *requests.VideoUpdateRequest) error {
 	}
 
 	return nil
+}
+
+func (v *videoUsecase) DeleteVideo(videoID string) error {
+	if err := v.videoRepository.Delete(videoID); err != nil {
+		return err
+	}
+
+	if err := v.scriptRepository.Delete(videoID); err != nil {
+		return err
+	}
+
+	if err := v.scriptIdiomsRepository.Delete(videoID); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (v *videoUsecase) GetByIdioms(idioms []string) ([]*entity.Video, error) {
+	idiomEntities, err := v.idiomsRepository.FindIdioms(idioms)
+	if err != nil {
+		return nil, err
+	}
+
+	if len(idiomEntities) == 0 {
+		return nil, errors.New("Video Not Found")
+	}
+	var words []string
+	for _, idiom := range idiomEntities {
+		words = append(words, idiom.Idiom)
+	}
+	scriptIdiomsEntities, err := v.scriptIdiomsRepository.Find(words)
+	if err != nil {
+		return nil, err
+	}
+
+	var videoIds []string
+	for _, script := range scriptIdiomsEntities {
+		videoIds = append(videoIds, script.VideoID)
+	}
+
+	videos, err := v.videoRepository.FindMany(entity.SearchCondition{
+		VideoIDs:   videoIds,
+		Limit:      entity.DEFAULT_MAX_LIMIT,
+		Level:      entity.DEFAULT_LEVEL,
+		CategoryID: entity.DEFAULT_CATEGORY_ID,
+	})
+	if err != nil {
+		return nil, err
+	}
+
+	return videos, nil
 }

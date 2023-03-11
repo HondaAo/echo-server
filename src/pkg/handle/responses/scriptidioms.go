@@ -9,5 +9,5 @@ type ScriptIdioms struct {
 type Idioms struct {
 	Word    string `json:"word"`
 	Meaning string `json:"meaning"`
-	Level   uint64 `json:"level"`
+	Level   string `json:"level"`
 }

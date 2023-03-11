@@ -8,17 +8,18 @@ import (
 )
 
 type VideoResponse struct {
-	Video        Video          `json:"video"`
-	Scripts      []Script       `json:"scripts"`
-	ScriptIdioms []ScriptIdioms `json:"script_idioms"`
+	Video   Video    `json:"video"`
+	Scripts []Script `json:"scripts"`
 }
 
 func NewResponse(video *entity.Video, scripts []*scriptEntity.Script, scriptIdioms []*scriptIdiomsEntity.ScriptIdioms, idioms []*idiomEntity.Idioms) VideoResponse {
-	level := getVideoLevel(video.Level)
+	level := GetVideoLevel(uint64(video.Level))
 	videoResponse := Video{
 		VideoID:   video.VideoID,
+		Title:     video.Title,
 		URL:       video.URL,
 		Start:     video.Start,
+		Category:  getCategory(video.CategoryID),
 		End:       video.End,
 		Level:     level,
 		Display:   video.Display,
@@ -26,25 +27,12 @@ func NewResponse(video *entity.Video, scripts []*scriptEntity.Script, scriptIdio
 		UpdatedAt: video.UpdatedAt.Format("2006-01-02"),
 	}
 
-	scriptResponses := make([]Script, 0, len(scripts))
-	for _, s := range scripts {
-		scriptResponses = append(scriptResponses, Script{
-			VideoID:   s.VideoID,
-			ScriptID:  s.ScriptID,
-			Text:      s.Text,
-			Japanese:  s.Japanese,
-			TimeStamp: s.TimeStamp,
-			CreatedAt: s.CreatedAt.Format("2006-01-02"),
-			UpdatedAt: s.UpdatedAt.Format("2006-01-02"),
-		})
-	}
-
 	idiomsMap := make(map[string]Idioms)
 	for _, i := range idioms {
 		idiomsMap[i.Idiom] = Idioms{
 			Word:    i.Idiom,
 			Meaning: i.Meaning,
-			Level:   uint64(i.Level),
+			Level:   getLevel(i.Level),
 		}
 	}
 
@@ -57,14 +45,32 @@ func NewResponse(video *entity.Video, scripts []*scriptEntity.Script, scriptIdio
 		})
 	}
 
+	scriptIdiomsMap := make(map[uint64][]ScriptIdioms)
+	for _, sim := range scriptIdiomsResponse {
+		scriptIdiomsMap[sim.ScriptID] = append(scriptIdiomsMap[sim.ScriptID], sim)
+	}
+
+	scriptResponses := make([]Script, 0, len(scripts))
+	for _, s := range scripts {
+		scriptResponses = append(scriptResponses, Script{
+			VideoID:   s.VideoID,
+			ScriptID:  s.ScriptID,
+			Text:      s.Text,
+			Japanese:  s.Japanese,
+			TimeStamp: s.TimeStamp,
+			Idioms:    scriptIdiomsMap[s.ScriptID],
+			CreatedAt: s.CreatedAt.Format("2006-01-02"),
+			UpdatedAt: s.UpdatedAt.Format("2006-01-02"),
+		})
+	}
+
 	return VideoResponse{
-		Video:        videoResponse,
-		Scripts:      scriptResponses,
-		ScriptIdioms: scriptIdiomsResponse,
+		Video:   videoResponse,
+		Scripts: scriptResponses,
 	}
 }
 
-func getVideoLevel(intLevel entity.VideoLevel) string {
+func GetVideoLevel(intLevel uint64) string {
 	switch intLevel {
 	case 1:
 		return "A1"

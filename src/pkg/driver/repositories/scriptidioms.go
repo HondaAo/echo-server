@@ -61,3 +61,11 @@ func (r *scriptIdiomsRepository) Store(words []entity.ScriptIdioms) error {
 
 	return nil
 }
+
+func (r *scriptIdiomsRepository) Delete(videoID string) error {
+	if result := r.db.Where("video_id = ?", videoID).Delete(&models.ScriptIdioms{}); result.Error != nil {
+		return result.Error
+	}
+
+	return nil
+}
