@@ -2,6 +2,7 @@ package videos
 
 import (
 	"errors"
+	"strings"
 
 	"github.com/HondaAo/snippet/src/pkg/handle/requests"
 	"github.com/HondaAo/snippet/src/pkg/services/idioms"
@@ -17,7 +18,7 @@ import (
 type VideoUsecaseInterface interface {
 	GetVideoByID(videoID string) (*entity.Video, []*scriptEntity.Script, []*scriptIdiomsEntity.ScriptIdioms, []*idiomEntity.Idioms, error)
 	GetByIdioms(idioms []string) ([]*entity.Video, error)
-	GetVideos(limit uint64, level uint64, categoryID uint64) ([]*entity.Video, error)
+	GetVideos(request *requests.VideoSearchType) ([]*entity.Video, error)
 	CreateVideo(request *requests.VideoRequest) error
 	UpdateVideo(request *requests.VideoUpdateRequest) error
 	ChangeDisplayStatus(videoID string) error
@@ -70,7 +71,11 @@ func (v *videoUsecase) GetVideoByID(videoID string) (*entity.Video, []*scriptEnt
 		return video, scripts, scriptIdioms, nil, nil
 	}
 
-	idiomEntities, err := v.idiomsRepository.FindIdioms(idioms)
+	var trimedIdioms []string
+	for _, idiom := range idioms {
+		trimedIdioms = append(trimedIdioms, strings.ReplaceAll(idiom, " ", ""))
+	}
+	idiomEntities, err := v.idiomsRepository.FindIdioms(trimedIdioms)
 	if err != nil {
 		return nil, nil, nil, nil, err
 	}
@@ -120,10 +125,9 @@ func (v *videoUsecase) GetVideoByIdioms(idioms []string) ([]*entity.Video, error
 		videoIds = append(videoIds, s.VideoID)
 	}
 	videos, err := v.videoRepository.FindMany(entity.SearchCondition{
-		VideoIDs:   videoIds,
-		Limit:      entity.DEFAULT_MAX_LIMIT,
-		Level:      entity.DEFAULT_LEVEL,
-		CategoryID: entity.DEFAULT_CATEGORY_ID,
+		VideoIDs: videoIds,
+		Limit:    entity.DEFAULT_MAX_LIMIT,
+		Date:     entity.GetDate(0),
 	})
 	if err != nil {
 		return nil, err
@@ -132,11 +136,14 @@ func (v *videoUsecase) GetVideoByIdioms(idioms []string) ([]*entity.Video, error
 	return videos, nil
 }
 
-func (v *videoUsecase) GetVideos(limit uint64, level uint64, categoryID uint64) ([]*entity.Video, error) {
+func (v *videoUsecase) GetVideos(request *requests.VideoSearchType) ([]*entity.Video, error) {
 	videos, err := v.videoRepository.FindMany(entity.SearchCondition{
-		Level:      level,
-		Limit:      limit,
-		CategoryID: categoryID,
+		Levels:      request.Levels,
+		Limit:       request.Limit,
+		CategoryIDs: request.Categories,
+		Length:      entity.GetLength(request.Length),
+		TypeIDs:     request.Types,
+		Date:        entity.GetDate(uint8(request.Date)),
 	})
 
 	if err != nil {
@@ -213,10 +220,9 @@ func (v *videoUsecase) GetByIdioms(idioms []string) ([]*entity.Video, error) {
 	}
 
 	videos, err := v.videoRepository.FindMany(entity.SearchCondition{
-		VideoIDs:   videoIds,
-		Limit:      entity.DEFAULT_MAX_LIMIT,
-		Level:      entity.DEFAULT_LEVEL,
-		CategoryID: entity.DEFAULT_CATEGORY_ID,
+		VideoIDs: videoIds,
+		Limit:    entity.DEFAULT_MAX_LIMIT,
+		Date:     entity.GetDate(0),
 	})
 	if err != nil {
 		return nil, err

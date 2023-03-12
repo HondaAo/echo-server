@@ -7,12 +7,14 @@ import (
 )
 
 type Video struct {
-	VideoID    string    `gorm:"video_id;primaryKey"`
-	Title      string    `gorm:"title"`
-	URL        string    `gorm:"url"`
-	Start      float64   `gorm:"start"`
-	End        float64   `gorm:"end"`
-	CategoryID uint64    `gorm:"category_id;default:0"`
+	VideoID    string `gorm:"primaryKey"`
+	Title      string
+	URL        string
+	Start      float64
+	End        float64
+	Type       uint64    `gorm:"default:1"`
+	Length     float64   `gorm:"default:60"`
+	CategoryID uint64    `gorm:"default:1"`
 	Level      uint64    `gorm:"level"`
 	Display    bool      `gorm:"display"`
 	CreatedAt  time.Time `gorm:"created_at"`

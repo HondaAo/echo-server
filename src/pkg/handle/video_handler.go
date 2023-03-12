@@ -1,8 +1,8 @@
 package handle
 
 import (
+	"log"
 	"net/http"
-	"strconv"
 
 	"github.com/HondaAo/snippet/src/pkg/handle/requests"
 	"github.com/HondaAo/snippet/src/pkg/handle/responses"
@@ -16,6 +16,7 @@ type Handler interface {
 	StoreVideo() echo.HandlerFunc
 	UpdateVideo() echo.HandlerFunc
 	ChangeStatus() echo.HandlerFunc
+	GetByIdioms() echo.HandlerFunc
 	Delete() echo.HandlerFunc
 }
 
@@ -45,20 +46,12 @@ func (v *videoHandler) GetVideo() echo.HandlerFunc {
 
 func (v *videoHandler) GetVideos() echo.HandlerFunc {
 	return func(c echo.Context) error {
-		level, err := strconv.Atoi(c.QueryParam("level"))
-		if err != nil {
-			return err
-		}
-		categoryID, err := strconv.Atoi(c.QueryParam("category_id"))
-		if err != nil {
-			return err
-		}
-		limit, err := strconv.Atoi(c.QueryParam("limit"))
-		if err != nil {
-			return err
+		newRequest := new(requests.VideoSearchType)
+		if err := echo.QueryParamsBinder(c).Uint64s("categories", &newRequest.Categories).Uint64s("levels", &newRequest.Levels).Uint8s("types", &newRequest.Types).Uint8("lengths", &newRequest.Length).Uint64("date", &newRequest.Date).Uint64("limit", &newRequest.Limit).BindError(); err != nil {
+			return c.JSON(http.StatusBadRequest, err)
 		}
 
-		videos, err := v.useCase.GetVideos(uint64(limit), uint64(level), uint64(categoryID))
+		videos, err := v.useCase.GetVideos(newRequest)
 		if err != nil {
 			return c.JSON(http.StatusBadRequest, nil)
 		}
@@ -74,9 +67,10 @@ func (v *videoHandler) GetVideos() echo.HandlerFunc {
 func (v *videoHandler) GetByIdioms() echo.HandlerFunc {
 	return func(c echo.Context) error {
 		idiom := c.Param("idiom")
+		log.Println(idiom)
 		videoEnties, err := v.useCase.GetByIdioms([]string{idiom})
 		if err != nil {
-			c.JSON(http.StatusBadRequest, err)
+			return c.JSON(http.StatusBadRequest, err)
 		}
 		var response []*responses.Video
 		for _, v := range videoEnties {

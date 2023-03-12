@@ -1,7 +1,6 @@
 package repositories
 
 import (
-	"errors"
 	"time"
 
 	"github.com/HondaAo/snippet/src/pkg/driver/models"
@@ -32,12 +31,8 @@ func (r *idiomsRepository) Find(idiom string) (*entity.Idioms, error) {
 
 func (r *idiomsRepository) FindIdioms(words []string) ([]*entity.Idioms, error) {
 	idioms := []*models.Idioms{}
-	if result := r.db.Where("idiom IN ?", words).Find(&idioms); result.Error != nil {
+	if result := r.db.Where("trimed_idiom IN ?", words).Find(&idioms); result.Error != nil {
 		return nil, result.Error
-	}
-
-	if len(words) != len(idioms) {
-		return nil, errors.New("Some Idioms have not registered")
 	}
 
 	idiomEntities := make([]*entity.Idioms, 0, len(idioms))

@@ -32,6 +32,7 @@ func (r *videoRepository) Store(video *entity.Video) error {
 		URL:       video.URL,
 		Start:     video.Start,
 		End:       video.End,
+		Length:    video.End - video.Start,
 		Level:     uint64(video.Level),
 		Display:   video.Display,
 		CreatedAt: time.Now(),
@@ -74,15 +75,21 @@ func (r *videoRepository) ChangeStatus(videoID string) error {
 
 func (r *videoRepository) FindMany(condition entity.SearchCondition) ([]*entity.Video, error) {
 	videos := []*models.Video{}
-	result := r.db.Limit(int(condition.Limit)).Find(&videos)
+	result := r.db.Limit(int(condition.Limit)).Where("created_at > ?", condition.Date).Find(&videos)
 	if len(condition.VideoIDs) > 0 {
 		result.Where("video_id IN ?", condition.VideoIDs).Find(&videos)
 	}
-	if condition.CategoryID != 0 {
-		result.Where("category_id = ?", condition.CategoryID).Find(&videos)
+	if len(condition.CategoryIDs) > 0 {
+		result.Where("category_id IN ?", condition.CategoryIDs).Find(&videos)
 	}
-	if condition.Level != 0 {
-		result.Where("level = ?", condition.Level).Find(&videos)
+	if len(condition.Levels) != 0 {
+		result.Where("level IN ?", condition.Levels).Find(&videos)
+	}
+	if len(condition.TypeIDs) > 0 {
+		result.Where("type IN ?", condition.TypeIDs).Find(&videos)
+	}
+	if len(condition.Length) > 0 {
+		result.Where("length BETWEEN ? AND ?", condition.Length[0], condition.Length[1])
 	}
 
 	if result.Error != nil {

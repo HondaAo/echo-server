@@ -88,3 +88,12 @@ func (v *VideoUpdateRequest) NewUpdateEntity() (*entity.Video, []*scriptEntity.S
 func NewUUID() uuid.UUID {
 	return uuid.New()
 }
+
+type VideoSearchType struct {
+	Categories []uint64 `json:"categories"`
+	Levels     []uint64 `json:"levels"`
+	Date       uint64   `json:"date"`
+	Limit      uint64   `json:"limit"`
+	Types      []uint8  `json:"types"`
+	Length     uint8    `json:"length"`
+}
