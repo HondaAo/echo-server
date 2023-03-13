@@ -47,7 +47,7 @@ func (v *videoHandler) GetVideo() echo.HandlerFunc {
 func (v *videoHandler) GetVideos() echo.HandlerFunc {
 	return func(c echo.Context) error {
 		newRequest := new(requests.VideoSearchType)
-		if err := echo.QueryParamsBinder(c).Uint64s("categories", &newRequest.Categories).Uint64s("levels", &newRequest.Levels).Uint8s("types", &newRequest.Types).Uint8("lengths", &newRequest.Length).Uint64("date", &newRequest.Date).Uint64("limit", &newRequest.Limit).BindError(); err != nil {
+		if err := echo.QueryParamsBinder(c).Uint64s("categories", &newRequest.Categories).Uint64s("levels", &newRequest.Levels).Uint8s("types", &newRequest.Types).Uint8("length", &newRequest.Length).Uint64("date", &newRequest.Date).Uint8s("types", &newRequest.Types).Uint64("limit", &newRequest.Limit).BindError(); err != nil {
 			return c.JSON(http.StatusBadRequest, err)
 		}
 

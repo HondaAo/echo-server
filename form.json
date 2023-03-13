@@ -4,14 +4,16 @@
     "level": 0,
     "start": 0,
     "end": 0,
+    "category_id": 1,
+    "type": 1,
     "scripts": [
-      {"text":"", "timestamp": 24, "japanese": "", "script_id": 1, "words": [] },
-      {"text":"","timestamp": 32, "japanese": "", "script_id": 2 },
-      {"text":"","timestamp": 38, "japanese": "", "script_id": 3 },
-      {"text":"","timestamp": 43, "japanese": "", "script_id": 4 },
-      {"text":"","timestamp": 48, "japanese":"", "script_id": 5 },
-      {"text":"","timestamp": 52, "japanese": "", "script_id": 6 },
-      {"text":"","timestamp": 55, "japanese": "", "script_id": 7 },
-      {"text":"", "timestamp": 58, "japanese": "", "script_id": 8 }
+      {"text":"", "timestamp": 0, "japanese": "", "script_id": 1, "words": [] },
+      {"text":"","timestamp": 0, "japanese": "", "script_id": 2 },
+      {"text":"","timestamp": 0, "japanese": "", "script_id": 3 },
+      {"text":"","timestamp": 0, "japanese": "", "script_id": 4 },
+      {"text":"","timestamp": 0, "japanese":"", "script_id": 5 },
+      {"text":"","timestamp": 0, "japanese": "", "script_id": 6 },
+      {"text":"","timestamp": 0, "japanese": "", "script_id": 7 },
+      {"text":"", "timestamp": 0, "japanese": "", "script_id": 8 }
     ]
 }

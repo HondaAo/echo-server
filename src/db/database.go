@@ -19,7 +19,7 @@ func InitDB(env env.EnvList) DB {
 		log.Fatal("DB connection error")
 	}
 
-	err = db.AutoMigrate(&models.Video{}, &models.Script{}, &models.Idioms{}, &models.ScriptIdioms{})
+	err = db.AutoMigrate(&models.Video{}, &models.Script{}, &models.Idioms{}, &models.ScriptIdioms{}, &models.Words{})
 	if err != nil {
 		log.Fatal("DB migration error")
 	}

@@ -8,24 +8,28 @@ import (
 )
 
 type VideoRequest struct {
-	Title   string          `json:"title"`
-	URL     string          `json:"url"`
-	Start   float64         `json:"start"`
-	End     float64         `json:"end"`
-	Level   uint64          `json:"level"`
-	Scripts []ScriptRequest `json:"scripts"`
+	Title      string          `json:"title"`
+	URL        string          `json:"url"`
+	Start      float64         `json:"start"`
+	End        float64         `json:"end"`
+	Level      uint64          `json:"level"`
+	CategoryID uint64          `json:"category_id"`
+	Type       uint64          `json:"type"`
+	Scripts    []ScriptRequest `json:"scripts"`
 }
 
 func (v *VideoRequest) NewEntity() (*entity.Video, []scriptEntity.Script, []scriptIdiomsEntity.ScriptIdioms, error) {
 	videoID := NewUUID()
 
 	video := &entity.Video{
-		VideoID: videoID.String(),
-		Title:   v.Title,
-		URL:     v.URL,
-		Start:   v.Start,
-		End:     v.End,
-		Level:   entity.VideoLevel(v.Level),
+		VideoID:     videoID.String(),
+		Title:       v.Title,
+		URL:         v.URL,
+		Start:       v.Start,
+		End:         v.End,
+		CategoryID:  entity.CategoryID(v.CategoryID),
+		EnglishType: entity.EnglishType(v.Type),
+		Level:       entity.VideoLevel(v.Level),
 	}
 
 	scriptEntities := make([]scriptEntity.Script, 0, len(v.Scripts))
@@ -52,13 +56,15 @@ func (v *VideoRequest) NewEntity() (*entity.Video, []scriptEntity.Script, []scri
 }
 
 type VideoUpdateRequest struct {
-	VideoID string          `json:"video_id"`
-	Title   string          `json:"title"`
-	URL     string          `json:"url"`
-	Start   float64         `json:"start"`
-	End     float64         `json:"end"`
-	Level   uint64          `json:"level"`
-	Scripts []ScriptRequest `json:"scripts"`
+	VideoID    string          `json:"video_id"`
+	Title      string          `json:"title"`
+	URL        string          `json:"url"`
+	Start      float64         `json:"start"`
+	End        float64         `json:"end"`
+	Level      uint64          `json:"level"`
+	CategoryID uint64          `json:"category_id"`
+	Type       uint64          `json:"type"`
+	Scripts    []ScriptRequest `json:"scripts"`
 }
 
 func (v *VideoUpdateRequest) NewUpdateEntity() (*entity.Video, []*scriptEntity.Script, error) {

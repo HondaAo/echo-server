@@ -11,6 +11,7 @@ import (
 	"github.com/HondaAo/snippet/src/pkg/handle"
 	idiomUsecase "github.com/HondaAo/snippet/src/pkg/services/idioms"
 	videoUsecase "github.com/HondaAo/snippet/src/pkg/services/videos"
+	wordUsecase "github.com/HondaAo/snippet/src/pkg/services/word"
 	"github.com/labstack/echo/v4"
 	"github.com/labstack/echo/v4/middleware"
 	"gorm.io/gorm"
@@ -33,10 +34,13 @@ func (s Server) Run() error {
 	sRepository := repositories.NewScriptRepository(s.db)
 	swRepository := repositories.NewScriptIdiomsRepository(s.db)
 	iRepository := repositories.NewIdiomsRepository(s.db)
+	wRepository := repositories.NewWordRepository(s.db)
 	vUsecase := videoUsecase.NewVideoUsecase(vRepository, sRepository, swRepository, iRepository)
 	iUsecase := idiomUsecase.NewIdiomUsecase(iRepository)
+	wUsecase := wordUsecase.NewWordUsecase(wRepository)
 	vHandler := handle.NewVideoHandler(vUsecase)
 	iHandler := handle.NewIdiomHandler(iUsecase)
+	wHandler := handle.NewWordHandler(wUsecase)
 
 	server := &http.Server{
 		Addr:         ":" + os.Getenv("PORT"),
@@ -57,9 +61,11 @@ func (s Server) Run() error {
 	api := s.echo.Group("/api/v1")
 	videoGroup := api.Group("/video")
 	idiomGroup := api.Group("/idiom")
+	wordGroup := api.Group("/words")
 
 	handle.RegisterVideoRoute(videoGroup, vHandler)
 	handle.RegisterIdiomRoute(idiomGroup, iHandler)
+	handle.RegisterWordRoute(wordGroup, wHandler)
 
 	go func() {
 		if err := s.echo.StartServer(server); err != nil {

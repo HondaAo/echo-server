@@ -1,6 +1,7 @@
 package repositories
 
 import (
+	"log"
 	"time"
 
 	"github.com/HondaAo/snippet/src/pkg/driver/models"
@@ -74,23 +75,25 @@ func (r *videoRepository) ChangeStatus(videoID string) error {
 }
 
 func (r *videoRepository) FindMany(condition entity.SearchCondition) ([]*entity.Video, error) {
+	log.Println(condition)
 	videos := []*models.Video{}
-	result := r.db.Limit(int(condition.Limit)).Where("created_at > ?", condition.Date).Find(&videos)
+	result := r.db.Limit(int(condition.Limit)).Where("created_at > ?", condition.Date)
 	if len(condition.VideoIDs) > 0 {
-		result.Where("video_id IN ?", condition.VideoIDs).Find(&videos)
+		result.Where("video_id IN ?", condition.VideoIDs)
 	}
 	if len(condition.CategoryIDs) > 0 {
-		result.Where("category_id IN ?", condition.CategoryIDs).Find(&videos)
+		result.Where("category_id IN ?", condition.CategoryIDs)
 	}
 	if len(condition.Levels) != 0 {
-		result.Where("level IN ?", condition.Levels).Find(&videos)
+		result.Where("level IN ?", condition.Levels)
 	}
 	if len(condition.TypeIDs) > 0 {
-		result.Where("type IN ?", condition.TypeIDs).Find(&videos)
+		result.Where("type IN ?", condition.TypeIDs)
 	}
 	if len(condition.Length) > 0 {
 		result.Where("length BETWEEN ? AND ?", condition.Length[0], condition.Length[1])
 	}
+	result.Find(&videos)
 
 	if result.Error != nil {
 		return nil, result.Error
